@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Geolocation API - MapTiler</title>
-    <!-- Menggunakan font Google 'Poppins' agar lebih modern -->
+    
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
         * {
@@ -136,11 +136,10 @@
     <div class="container">
         
         <div class="header">
-            <h3>Nama : <span class="highlight">[Afdan Aiman Saputra]</span></h3>
-            <h3>NIM : <span class="highlight">[20240140202]</span></h3>
+            <h3>Nama : <span class="highlight">Afdan Aiman Saputra</span></h3>
+            <h3>NIM : <span class="highlight">20240140202</span></h3>
         </div>
 
-        <!-- Bagian Input Sesuai Gambar -->
         <div class="search-box">
             <label for="lokasiInput">Cari Lokasi:</label>
             <div class="search-input-group">
@@ -149,7 +148,6 @@
             </div>
         </div>
 
-        <!-- Bagian Menampilkan Hasil -->
         <div class="result-container">
             <div class="result-item">
                 <span class="result-label">Negara</span>
@@ -183,13 +181,10 @@
                 return;
             }
 
-            // GANTI 'YOUR_API_KEY' DENGAN API KEY MAPTILER ANDA
             const apiKey = 'etrP2AeuD4jzd2IQ8mXi'; 
             
-            // Endpoint Geocoding dari MapTiler
             const url = `https://api.maptiler.com/geocoding/${encodeURIComponent(lokasi)}.json?key=${apiKey}`;
 
-            // Reset tampilan sambil loading
             document.getElementById("negara").innerHTML = "Loading...";
             document.getElementById("provinsi").innerHTML = "Loading...";
             document.getElementById("kecamatan").innerHTML = "Loading...";
@@ -204,24 +199,44 @@
                     if (data.features && data.features.length > 0) {
                         const hasil = data.features[0];
                         
-                        // Ekstrak koordinat
                         const longitude = hasil.center[0];
                         const latitude = hasil.center[1];
 
-                        // Parsing context dari MapTiler untuk mendapatkan detail wilayah
                         let negara = "-";
                         let provinsi = "-";
-                        let kecamatan = hasil.text || "-"; 
+                        let kecamatan = "-"; 
+
+                        const placeType = hasil.place_type ? hasil.place_type[0] : "";
+                        
+                        if (placeType.includes("country")) {
+                            negara = hasil.text;
+                        } else if (placeType.includes("region") || placeType.includes("province") || placeType.includes("state")) {
+                            provinsi = hasil.text;
+                        } else {
+                            kecamatan = hasil.text;
+                        }
 
                         if (hasil.context) {
                             hasil.context.forEach(item => {
-                                if (item.id.includes("country")) negara = item.text;
-                                if (item.id.includes("region") || item.id.includes("province")) provinsi = item.text;
-                                if (item.id.includes("county") || item.id.includes("city")) kecamatan = item.text;
+                                if (item.id.includes("country")) {
+                                    negara = item.text;
+                                }
+                                if (item.id.includes("region") || item.id.includes("province")) {
+                                    provinsi = item.text;
+                                }
+                                if (item.id.includes("county") || item.id.includes("city")) {
+                                    if (kecamatan === "-") {
+                                        kecamatan = item.text;
+                                    }
+                                }
                             });
                         }
 
-                        // Memasukkan data ke dalam HTML
+                       
+                        if (kecamatan === "-" && !placeType.includes("country")) {
+                            kecamatan = hasil.text;
+                        }
+
                         document.getElementById("negara").innerHTML = negara;
                         document.getElementById("provinsi").innerHTML = provinsi;
                         document.getElementById("kecamatan").innerHTML = kecamatan;
