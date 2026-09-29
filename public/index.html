@@ -1,48 +1,252 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="id">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Geolocation</title>
-</head>
+    <title>Geolocation API - MapTiler</title>
+    <!-- Menggunakan font Google 'Poppins' agar lebih modern -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
 
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #74ebd5 0%, #9face6 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: #333;
+        }
+
+        .container {
+            background-color: #ffffff;
+            width: 100%;
+            max-width: 500px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+            padding: 30px;
+            margin: 20px;
+        }
+
+        .header {
+            text-align: center;
+            border-bottom: 2px dashed #ddd;
+            padding-bottom: 20px;
+            margin-bottom: 20px;
+        }
+
+        .header h3 {
+            color: #555;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .header span.highlight {
+            color: #2575fc;
+        }
+
+        .search-box {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 25px;
+        }
+
+        .search-box label {
+            font-weight: 600;
+            color: #444;
+        }
+
+        .search-input-group {
+            display: flex;
+            gap: 10px;
+        }
+
+        .search-box input {
+            flex: 1;
+            padding: 12px 15px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            font-size: 14px;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        .search-box input:focus {
+            border-color: #2575fc;
+        }
+
+        .search-box button {
+            background-color: #2575fc;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: background-color 0.3s;
+        }
+
+        .search-box button:hover {
+            background-color: #1b5bbf;
+        }
+
+        .result-container {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            border: 1px solid #eee;
+        }
+
+        .result-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid #e1e1e1;
+        }
+
+        .result-item:last-child {
+            border-bottom: none;
+        }
+
+        .result-label {
+            font-weight: 600;
+            color: #666;
+        }
+
+        .result-value {
+            font-weight: 400;
+            color: #222;
+            text-align: right;
+            background: #e9ecef;
+            padding: 4px 10px;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+    </style>
+</head>
 <body>
 
-    <h3>Nama : </h3>
-    <h3>NIM : </h3>
+    <div class="container">
+        
+        <div class="header">
+            <h3>Nama : <span class="highlight">[Afdan Aiman Saputra]</span></h3>
+            <h3>NIM : <span class="highlight">[20240140202]</span></h3>
+        </div>
 
-    <p>
-        Kota :
-        <span id="lokasi"></span>
-    </p>
+        <!-- Bagian Input Sesuai Gambar -->
+        <div class="search-box">
+            <label for="lokasiInput">Cari Lokasi:</label>
+            <div class="search-input-group">
+                <input type="text" id="lokasiInput" placeholder="Contoh: Jakarta, Bandung...">
+                <button onclick="fetchDataLokasi()">Cari</button>
+            </div>
+        </div>
 
-    <hr>
-
-    <p>
-        Koordinat :
-        <span id="negara"></span>
-    </p>
+        <!-- Bagian Menampilkan Hasil -->
+        <div class="result-container">
+            <div class="result-item">
+                <span class="result-label">Negara</span>
+                <span class="result-value" id="negara">-</span>
+            </div>
+            <div class="result-item">
+                <span class="result-label">Provinsi</span>
+                <span class="result-value" id="provinsi">-</span>
+            </div>
+            <div class="result-item">
+                <span class="result-label">Kecamatan / Kota</span>
+                <span class="result-value" id="kecamatan">-</span>
+            </div>
+            <div class="result-item">
+                <span class="result-label">Longitude</span>
+                <span class="result-value" id="longitude">-</span>
+            </div>
+            <div class="result-item">
+                <span class="result-label">Latitude</span>
+                <span class="result-value" id="latitude">-</span>
+            </div>
+        </div>
+    </div>
 
     <script>
+        function fetchDataLokasi() {
+            const lokasi = document.getElementById("lokasiInput").value;
+            
+            if (!lokasi) {
+                alert("Silakan masukkan nama lokasi terlebih dahulu!");
+                return;
+            }
 
-        fetch("/api/lokasi")
-            .then(response => response.json())
-            .then(data => {
+            // GANTI 'YOUR_API_KEY' DENGAN API KEY MAPTILER ANDA
+            const apiKey = 'etrP2AeuD4jzd2IQ8mXi'; 
+            
+            // Endpoint Geocoding dari MapTiler
+            const url = `https://api.maptiler.com/geocoding/${encodeURIComponent(lokasi)}.json?key=${apiKey}`;
 
-                console.log(data);
+            // Reset tampilan sambil loading
+            document.getElementById("negara").innerHTML = "Loading...";
+            document.getElementById("provinsi").innerHTML = "Loading...";
+            document.getElementById("kecamatan").innerHTML = "Loading...";
+            document.getElementById("longitude").innerHTML = "Loading...";
+            document.getElementById("latitude").innerHTML = "Loading...";
 
-                document.getElementById("lokasi").innerHTML = data.kota;
+            fetch(url)
+                .then(response => response.json())
+                .then(data => {
+                    console.log(data);
 
-                document.getElementById("negara").innerHTML =
-                    data.koordinat;
+                    if (data.features && data.features.length > 0) {
+                        const hasil = data.features[0];
+                        
+                        // Ekstrak koordinat
+                        const longitude = hasil.center[0];
+                        const latitude = hasil.center[1];
 
-            })
-            .catch(error => {
+                        // Parsing context dari MapTiler untuk mendapatkan detail wilayah
+                        let negara = "-";
+                        let provinsi = "-";
+                        let kecamatan = hasil.text || "-"; 
 
-                console.error(error);
+                        if (hasil.context) {
+                            hasil.context.forEach(item => {
+                                if (item.id.includes("country")) negara = item.text;
+                                if (item.id.includes("region") || item.id.includes("province")) provinsi = item.text;
+                                if (item.id.includes("county") || item.id.includes("city")) kecamatan = item.text;
+                            });
+                        }
 
-            });
+                        // Memasukkan data ke dalam HTML
+                        document.getElementById("negara").innerHTML = negara;
+                        document.getElementById("provinsi").innerHTML = provinsi;
+                        document.getElementById("kecamatan").innerHTML = kecamatan;
+                        document.getElementById("longitude").innerHTML = longitude;
+                        document.getElementById("latitude").innerHTML = latitude;
 
+                    } else {
+                        alert("Lokasi tidak ditemukan!");
+                        resetTampilan();
+                    }
+                })
+                .catch(error => {
+                    console.error("Error fetching data:", error);
+                    alert("Terjadi kesalahan jaringan atau API Key tidak valid.");
+                    resetTampilan();
+                });
+        }
+
+        function resetTampilan() {
+            document.getElementById("negara").innerHTML = "-";
+            document.getElementById("provinsi").innerHTML = "-";
+            document.getElementById("kecamatan").innerHTML = "-";
+            document.getElementById("longitude").innerHTML = "-";
+            document.getElementById("latitude").innerHTML = "-";
+        }
     </script>
 
 </body>
