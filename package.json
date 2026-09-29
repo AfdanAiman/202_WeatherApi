@@ -17,5 +17,8 @@
   "bugs": {
     "url": "https://github.com/AfdanAiman/202_WeatherApi/issues"
   },
-  "homepage": "https://github.com/AfdanAiman/202_WeatherApi#readme"
+  "homepage": "https://github.com/AfdanAiman/202_WeatherApi#readme",
+  "dependencies": {
+    "express": "^5.2.1"
+  }
 }
